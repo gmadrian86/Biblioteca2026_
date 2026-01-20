@@ -3,6 +3,7 @@
  */
 package es.educastur.lue01323.biblioteca2025;
 
+import java.awt.geom.Path2D;
 import java.lang.reflect.Array;
 import java.sql.SQLOutput;
 import java.time.LocalDate;
@@ -11,6 +12,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import javax.swing.text.Position;
 
 /**
@@ -26,17 +28,14 @@ public class Biblioteca2025 {
     private static final ArrayList<Prestamo> prestamosHist = new ArrayList();
 
     public static void main(String[] args) {
-        //cargaDatos();                                                           //si nos da otro cargaDatos comentamos este o le ponemos cargaDatosExam y lo ponemos aqui
-        menuOpciones();  
-        //pal examen comentar menuOpciones ();
-//uno();
-cargaDatosExam ();
-//MODIFICACION GITHUB
+        //cargaDatos();                                                           
+        //menuOpciones();
 
-       
-        //usuarioConMasPrestamos();
-        //listarPrestamosPorAño();
-        //listarPrestamosPorAño();
+        cargaDatosExam();
+        orderarConStreams();
+        System.out.println(numPrestamosLibro("1-11"));
+//MODIFICACION GITHUB           -> HACER COMMIT Y LUEGO PUSH
+
     }
 
     public static void cargaDatos() {
@@ -447,7 +446,7 @@ cargaDatosExam ();
             LocalDate devolucion = hoy.plusDays(15);
 
             prestamos.add(
-                    new Prestamo(libros.get(posLibro),usuarios.get(posUsuario),hoy,devolucion));
+                    new Prestamo(libros.get(posLibro), usuarios.get(posUsuario), hoy, devolucion));
 
             // Restar ejemplar
             libros.get(posLibro).setEjemplares(libros.get(posLibro).getEjemplares() - 1);
@@ -756,7 +755,7 @@ cargaDatosExam ();
     }
 
     //EXAMEN CORREGIDO
-    public static void cargaDatosExam () {
+    public static void cargaDatosExam() {
         libros.add(new Libro("1-11", "El Hobbit", "JRR Tolkien", "Aventuras", 3));
         libros.add(new Libro("1-22", "El Silmarillon", "JRR Tolkien", "Aventuras", 3));
         libros.add(new Libro("1-33", "El Medico", "N. Gordon", "Aventuras", 4));
@@ -797,9 +796,9 @@ cargaDatosExam ();
         prestamosHist.add(new Prestamo(libros.get(7), usuarios.get(2), hoy.minusDays(10), hoy));
         prestamosHist.add(new Prestamo(libros.get(6), usuarios.get(3), hoy.minusDays(10), hoy));
     }
-     
 
- /*public static void uno() {
+
+    /*public static void uno() {
         System.out.print("ISBN LIBRO para consultar prestamos: ");
         String isbn = sc.next();
         int pos = buscaIsbn(isbn);
@@ -915,5 +914,144 @@ cargaDatosExam ();
         }
 
         return pos;
+    }
+
+    public static boolean esInt(String s) {
+        int n;
+        try {
+            n = Integer.parseInt(s);
+            return true;
+        } catch (NumberFormatException ex) {
+            return false;
+        }
+    }
+
+    public static boolean esDouble(String s) {
+        double n;
+        try {
+            n = Double.parseDouble(s);
+            return true;
+        } catch (NumberFormatException ex) {
+            return false;
+        }
+    }
+
+    /* EJEMPLOS DE UTILIZACION esInt() y esDouble() :
+        
+        //INTRODUCIR LAS EXISTENCIAS DE UN LIBRO EN UNA VARIABLE DE TIPO INT
+        String exT;
+	do {          
+            System.out.println("EXISTENCIAS:");
+            exT=sc.next(); //Se lee la entrada de EXISTENCIAS como un String
+        } while(!esInt(exT)); //Se sigue pidiendo la entrada si no es int
+        
+        // INTRODUCIR EL PVP DE UN ARTÍCULO EN UNA VARIABLE DE TIPO DOUBLE
+        String pvpT;
+	do {          
+            System.out.println("PVP:");
+            pvpT=sc.next(); //Se lee la entrada del PVP como un String
+        } while(!esDouble(pvpT)); /
+     */
+    public static boolean validarDNI(String dni) {
+        // Verificar que el DNI tiene un formato válido
+        if (dni.isBlank() || !dni.matches("\\d{8}[A-HJ-NP-TV-Z]")) {
+            return false;
+        }
+
+        // Extraer el número y la letra del DNI
+        String numeroStr = dni.substring(0, 8);
+        char letra = dni.charAt(8);
+
+        // Calcular la letra correspondiente al número del DNI
+        char letraCalculada = calcularLetraDNI(Integer.parseInt(numeroStr));
+
+        // Comparar la letra calculada con la letra proporcionada y devolver
+        // el resultado de la comparación TRUE/FALSE
+        return letra == letraCalculada;
+
+        /* devuelve TRUE si la letra del DNI y la calculada según la fórmula COINCIDEN 
+        SE PUEDE DEVOLVER ASI EL RESULTADO DE UNA COMPARACIÓN. Se devuelve TRUE si la comparación
+        se cumple y FALSE sino. Es equivalente a poner:
+          if (letra == letraCalculada) {
+              return TRUE;
+           } else {
+              return FALSE;   
+           }
+         */
+    }
+
+    private static char calcularLetraDNI(int numero) {
+        String letras = "TRWAGMYFPDXBNJZSQVHLCKE";
+        return letras.charAt(numero % 23);
+    }
+
+    public static void listadosConStreams() {
+        //Listados generales de libros y usuarios con STREAMS
+        System.out.println("Libros listados desde un STREAM:");
+        libros.stream().forEach(l -> System.out.println(l));
+        System.out.println("\nUsuarios listados desde un STREAM:");
+        usuarios.stream().forEach(u -> System.out.println(u));
+
+        //Listados selectivos (filter) con STREAMS
+        System.out.println("\nLibros de la seccion aventuras:");
+        libros.stream().filter(l -> l.getGenero().equalsIgnoreCase("aventuras"))
+                .forEach(l -> System.out.println(l));
+
+        System.out.println("\nLibros de la seccion novela negra o del autor JRR tolkien:");
+        libros.stream().filter(l -> l.getGenero().equalsIgnoreCase("novela negra")
+                || l.getAutor().equalsIgnoreCase("jrr tolkien"))
+                .forEach(l -> System.out.println(l));
+
+        System.out.println("\nPrestamos fuera de plazo:");
+        prestamos.stream().filter(p -> p.getFechaDevDate().isBefore(LocalDate.now()))
+                .forEach(p -> System.out.println(p));
+
+        System.out.println("\nPrestamos activos y no activos del usuario(teclear NOMBRE):");
+        String nombre = sc.next();
+        prestamos.stream().filter(p -> p.getUsuarioPrest().getNombre().equalsIgnoreCase(nombre))
+                .forEach(p -> System.out.println(p));
+        prestamosHist.stream().filter(p -> p.getUsuarioPrest().getNombre().equalsIgnoreCase(nombre))
+                .forEach(p -> System.out.println(p));
+
+        System.out.println("\nPrestamos Fuera de plazo de un usuario(teclear NOMBRE):");
+        String nombre2 = sc.next();
+        prestamos.stream().filter(p -> p.getUsuarioPrest().getNombre().equalsIgnoreCase(nombre2)
+                && p.getFechaDevDate().isBefore(LocalDate.now()))
+                .forEach(p -> System.out.println(p));
+
+        System.out.println("\nPrestamos activos de libros del genero aventuras:");
+        prestamos.stream().filter(p -> p.getLibroPrest().getGenero().equalsIgnoreCase("aventuras"))
+                .forEach(p -> System.out.println(p));
+
+    }
+
+    public static void orderarConStreams() {
+
+        System.out.println("Lista de libros ordenados alfabeticamente por titulo");
+        libros.stream().sorted(Comparator.comparing(Libro::getTitulo).reversed()).forEach(l -> System.out.println(l));               //Comparator.comparing(Libro::getTitulo);  - > dentro del sorted pa que ordene por titulo o lo que queramos         //reversed pa hacer la ordenacion al reves
+
+        System.out.println("\nLista de libros ordenados por fecha prestamos: ");
+        prestamos.stream().sorted(Comparator.comparing(Prestamo::getFechaPrest)).forEach(p -> System.out.println(p));
+
+        System.out.println("\nLista de libros ordenados por numero de prestamos: ");
+        libros.stream().sorted(Comparator.comparing(l -> numPrestamosLibro(l.getIsbn())))
+                .forEach(l -> System.out.println(l + " -Unidades prestadas: " + numPrestamosLibro(l.getIsbn())));
+    }
+
+    public static int numPrestamosLibro(String isbn) {
+        int cont = 0;
+
+        for (Prestamo p : prestamos) {
+            if (p.getLibroPrest().getIsbn().equalsIgnoreCase(isbn)) {
+                cont++;
+            }
+        }
+        for (Prestamo p : prestamosHist) {
+            if (p.getLibroPrest().getIsbn().equalsIgnoreCase(isbn)) {
+                cont++;
+            }
+        }
+        return cont;
+
     }
 }
